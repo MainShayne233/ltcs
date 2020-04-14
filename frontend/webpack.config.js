@@ -12,8 +12,30 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
   },
+  resolve: {
+    modules: ["node_modules"],
+    extensions: [".js", ".elm", ".wasm"],
+  },
+  module: {
+    rules: [
+      {
+        test: /\.elm$/,
+        exclude: [/elm-stuff/, /node_modules/],
+        use: [
+          { loader: "elm-hot-webpack-loader" },
+          {
+            loader: "elm-webpack-loader",
+            options: {
+              debug: true,
+              forceWatch: true,
+            },
+          },
+        ],
+      },
+    ],
+  },
   plugins: [
-    new HtmlWebpackPlugin(),
+    new HtmlWebpackPlugin({ template: "src/index.html" }),
     new WasmPackPlugin({
       crateDirectory,
       outDir,
