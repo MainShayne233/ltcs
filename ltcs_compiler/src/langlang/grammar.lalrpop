@@ -1,0 +1,75 @@
+use std::str::FromStr;
+use super::ast;
+
+grammar;
+
+pub Program: ast::Expression = {
+    <l:(<Line>)+> => ast::Expression::Program { lines: Box::new(l) },
+}
+
+Line: ast::Expression = {
+    <Expression> ";" => <>,
+}
+
+Expression: ast::Expression = {
+    Binary => <>,
+    Assign => <>,
+    ValueExpression => <>,
+}
+
+ValueExpression: ast::Expression = {
+    Num => <>,
+    Var => <>,
+    Call => <>,
+    Lambda => <>,
+    String => <>,
+}
+
+Lambda: ast::Expression = {
+    "lambda" "(" <vars:Comma<Ident>> ")" "{" <body:Program> "}" => ast::Expression::Lambda { vars: vars, body: Box::new(body) }
+}
+
+EmbeddedProgram: ast::Expression = {
+    "{" <Program> "}" => <>,
+}
+
+Assign: ast::Expression = {
+    <lhs:Var> "=" <rhs:ValueExpression> => ast::Expression::Assign{ operator: ast::AssignOperator::Equals, left: Box::new(lhs), right: Box::new(rhs) }
+}
+
+Binary: ast::Expression = {
+    <lhs:ValueExpression> "+" <rhs:ValueExpression> => ast::Expression::Binary{ operator: ast::BinaryOperator::Plus, left: Box::new(lhs), right: Box::new(rhs) }
+}
+
+Call: ast::Expression = {
+    <func:ValueExpression> "(" <args:Comma<ValueExpression>>  ")" => ast::Expression::Call { func: Box::new(func), args: Box::new(args) }
+}
+
+Var: ast::Expression = {
+    Ident => ast::Expression::Var { value: String::from(<>) },
+}
+
+Num: ast::Expression = {
+    <pos:r"[0-9]+"> => ast::Expression::Num { value: i64::from_str(<>).unwrap() },
+}
+
+String: ast::Expression = {
+    <x:r#""(([^\\"]|\\.)*)""#> => ast::Expression::String { value: x[1..(x.len() - 1)].to_string() },
+}
+
+// Helpers
+
+Comma<T>: Vec<T> = {
+    <v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+}
+
+Ident: String = {
+    r"[a-z-]+" => String::from(<>),
+}

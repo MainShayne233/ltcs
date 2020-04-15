@@ -1,7 +1,6 @@
-#[macro_use] extern crate lalrpop_util;
+mod langlang;
 use wasm_bindgen::prelude::*;
-
-lalrpop_mod!(pub calculator1);
+#[macro_use] extern crate lalrpop_util;
 
 #[wasm_bindgen]
 extern "C" {
@@ -10,12 +9,10 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn greet(name: &str) {
-    let result = calculator1::TermParser::new().parse("22");
-    alert(&format!("Hello!!!, {}! {:?}", name, result));
+    alert(&format!("Hello!!!, {}!", name));
 }
 
 #[wasm_bindgen]
 pub fn parse(input: &str) {
-    let result = calculator1::TermParser::new().parse(input);
-    alert(&format!("Parsed: {:?}", result));
+    alert(&format!("Parsing: {}", input));
 }
