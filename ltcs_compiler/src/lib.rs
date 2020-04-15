@@ -13,6 +13,9 @@ pub fn greet(name: &str) {
 }
 
 #[wasm_bindgen]
-pub fn parse(input: &str) {
-    alert(&format!("Parsing: {}", input));
+pub fn parse(input: &str) -> String {
+    match langlang::parse(input) {
+        Ok(program) => format!("{:?}", program),
+        Err(error) => error,
+    }
 }
